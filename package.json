@@ -1,0 +1,22 @@
+{
+  "name": "ai-ci-recovery-agent",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "eslint.config.js",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "private": "true",
+  "scripts": {
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev:agent": "npm run dev --workspace=@agent/core",
+    "dev:frontend": "npm run dev --workspace=@demo/frontend"
+  }
+}
