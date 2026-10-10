@@ -1,5 +1,5 @@
 function main(): void {
-  console.log("AI Engineering Agent started");
+  console.log('AI Engineering Agent started');
 }
 
 main();

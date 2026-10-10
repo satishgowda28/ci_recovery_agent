@@ -1,31 +1,31 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
 type Product = {
-  id: number
-  name: string
-  price: number
-}
+  id: number;
+  name: string;
+  price: number;
+};
 
 const products: Product[] = [
   { id: 1, name: 'Everyday Tee', price: 29 },
   { id: 2, name: 'Canvas Jacket', price: 89 },
   { id: 3, name: 'Travel Sneakers', price: 119 },
-]
+];
 
 function App() {
-  const [cart, setCart] = useState<Product[]>([])
-  const [checkoutComplete, setCheckoutComplete] = useState(false)
+  const [cart, setCart] = useState<Product[]>([]);
+  const [checkoutComplete, setCheckoutComplete] = useState(false);
 
   const addToCart = (product: Product) => {
-    setCart((current) => [...current, product])
-  }
+    setCart((current) => [...current, product]);
+  };
 
-  const total = cart.reduce((sum, product) => sum + product.price, 0)
+  const total = cart.reduce((sum, product) => sum + product.price, 0);
 
   const checkout = () => {
-    if (cart.length === 0) return
-    setCheckoutComplete(true)
-  }
+    if (cart.length === 0) return;
+    setCheckoutComplete(true);
+  };
 
   return (
     <main className="app-shell">
@@ -44,8 +44,8 @@ function App() {
           <p className="eyebrow">Frontend test target</p>
           <h2>A small app designed to generate realistic CI failures.</h2>
           <p>
-            This app is intentionally simple. Playwright, unit tests, linting,
-            and TypeScript checks will provide evidence for the AI recovery agent.
+            This app is intentionally simple. Playwright, unit tests, linting, and TypeScript checks
+            will provide evidence for the AI recovery agent.
           </p>
         </div>
         <div className="hero-card">
@@ -85,10 +85,7 @@ function App() {
         <div>
           <p className="eyebrow">Checkout</p>
           <h2 id="checkout-heading">Ready to place your order?</h2>
-          <p>
-            This flow will later be used to reproduce QA reports and Playwright
-            failures.
-          </p>
+          <p>This flow will later be used to reproduce QA reports and Playwright failures.</p>
         </div>
 
         <button
@@ -107,7 +104,7 @@ function App() {
         )}
       </section>
     </main>
-  )
+  );
 }
 
-export default App
+export default App;
