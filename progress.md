@@ -157,17 +157,17 @@ unknown
 
 Initial policy:
 
-| Failure | Initial behavior |
-|---|---|
-| Formatting | Candidate for auto-fix |
-| Simple lint | Candidate for auto-fix |
-| TypeScript | Human approval |
-| Unit test | Human approval |
-| Playwright | Human approval initially |
-| Build | Human approval |
-| Dependency | Human approval |
-| Security | Human approval |
-| Unknown | Human approval |
+| Failure     | Initial behavior         |
+| ----------- | ------------------------ |
+| Formatting  | Candidate for auto-fix   |
+| Simple lint | Candidate for auto-fix   |
+| TypeScript  | Human approval           |
+| Unit test   | Human approval           |
+| Playwright  | Human approval initially |
+| Build       | Human approval           |
+| Dependency  | Human approval           |
+| Security    | Human approval           |
+| Unknown     | Human approval           |
 
 The policy should be deterministic and configurable.
 
@@ -389,7 +389,7 @@ Build structured diagnosis:
 ```ts
 type FailureAnalysis = {
   category: FailureCategory;
-  severity: "low" | "medium" | "high" | "critical";
+  severity: 'low' | 'medium' | 'high' | 'critical';
   confidence: number;
   rootCause: string;
   affectedFiles: string[];
@@ -688,7 +688,6 @@ PASS
 
 The final portfolio story should emphasize the **system architecture, safety model, tool-use loop, CI/CD integration, and human-in-the-loop design**, not simply "I built an AI agent."
 
-
 ---
 
 # Architecture Decision Record (ADR)
@@ -701,6 +700,7 @@ When we make a meaningful architectural change, update this section rather than 
 **Decision:** Use TypeScript / Node.js for the core agent system.
 
 **Reason:**
+
 - The project owner is significantly more comfortable with TypeScript/JavaScript than Go.
 - This keeps the learning focus on agent architecture, CI/CD, GitHub, Playwright, tool calling, and system design instead of learning a second backend language at the same time.
 
@@ -746,6 +746,7 @@ Initial policy engine
 ```
 
 **Reason:**
+
 - No hosting cost while unemployed.
 - Faster experimentation.
 - Easier debugging.
