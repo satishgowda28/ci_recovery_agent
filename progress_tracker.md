@@ -1,7 +1,7 @@
 # Progress Tracker
 
 Legend: `[ ]` not started · `[~]` in progress · `[x]` complete
-Last updated: 2026-10-10 (initial audit from repo state)
+Last updated: 2026-10-14 (Phase 1a: OllamaProvider done)
 
 Plan: MVP first, then grow into full Feedback → Remediation → Verification system. Owner codes; Claude guides/reviews.
 
@@ -28,16 +28,16 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 - [x] npm workspaces (`apps/*`, `packages/*`)
 - [x] `apps/agent` stub (tsx, tsc typecheck)
 - [x] `apps/demo-frontend` scaffold
-- [~] `packages/shared` (package.json only, no code)
+- [x] `packages/shared` (TS source package, consumed via `exports` → `src/index.ts`)
 - [x] ESLint (flat config), Prettier
-- [~] Vitest (root dev dep; only frontend has tests)
-- [ ] `tsconfig.base.json` filled + extended by apps
-- [ ] Minimal `LLMProvider` interface in `packages/shared`
-- [ ] README beyond diagram (setup, run, architecture)
+- [x] Vitest (shared tests via root `npm test`; frontend has own config)
+- [x] `tsconfig.base.json` filled + extended by agent and shared
+- [x] Minimal `LLMProvider` interface in `packages/shared`
+- [x] README (setup, commands, layout, architecture)
 
 ## Modules (code)
 
-- [ ] LLM layer: `LLMProvider` interface, request/response types
+- [x] LLM layer: `LLMProvider` interface, request/response types, `isToolCallResponse` guard
 - [ ] Agent loop (manual): observe → LLM → tool call → result → repeat
 - [ ] Tool registry + argument validation
 - [ ] Read tools: `listFiles`, `readFile`, `searchCode`, `getGitDiff`
@@ -74,7 +74,7 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 - [x] ESLint + typescript-eslint, Prettier
 - [x] Vitest, Testing Library, jsdom
 - [x] Playwright test runner
-- [ ] Ollama client (HTTP or `ollama` npm) — behind `LLMProvider`
+- [x] Ollama client — plain `fetch` `OllamaProvider` behind `LLMProvider` (tested)
 - [ ] Free cloud LLM SDK (OpenRouter or similar) — behind `LLMProvider`
 - [ ] Paid LLM SDK (optional, last)
 - [ ] `@octokit/*` (REST, webhooks, app auth)
@@ -84,7 +84,7 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 
 ## Third-party integrations / accounts
 
-- [ ] Ollama installed + a tool-calling-capable model pulled
+- [x] Ollama installed + tool-calling model (`llama3.2`)
 - [ ] GitHub repo + fine-grained token / GitHub App (least privilege)
 - [ ] Webhook secret + signature verification
 - [ ] HTTPS tunnel for local webhooks (cloudflared / ngrok / smee)
@@ -107,3 +107,5 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 ## Log
 
 - 2026-10-10 — Tracker created. Repo audited: Task 001 partly done (monorepo, lint/format, frontend scaffold). Next: finish Task 001 (tsconfig.base, `LLMProvider`), then Phase 1 tool-calling prototype.
+- 2026-10-10 — Task 001 steps 1–4 done: tsconfig.base, shared package, LLM types + type guard + tests. README written (step 5). Task 001 complete.
+- 2026-10-14 — Phase 1a done: OllamaProvider (fetch, non-streaming) + 5 mocked-fetch tests. Next: 1b tools.
