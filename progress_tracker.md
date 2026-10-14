@@ -10,7 +10,7 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 | Phase | Name                               | Status |
 | ----- | ---------------------------------- | ------ |
 | 0     | Learn architecture / LLM basics    | [~]    |
-| 1     | Tiny local read-only agent (CLI)   | [ ]    |
+| 1     | Tiny local read-only agent (CLI)   | [~]    |
 | 2     | LLM provider abstraction           | [ ]    |
 | 3     | Demo frontend                      | [~]    |
 | 4     | Playwright + GitHub Actions CI     | [~]    |
@@ -34,6 +34,25 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 - [x] `tsconfig.base.json` filled + extended by agent and shared
 - [x] Minimal `LLMProvider` interface in `packages/shared`
 - [x] README (setup, commands, layout, architecture)
+
+## Phase 1 — Tiny local agent (current)
+
+Source: `progress.md` → Phase 1. Success criterion: agent can inspect a small repo and explain a code issue using tools. No writing, no GitHub, no autonomous fixes.
+
+Review checks against this list only. Items marked _(added)_ are not in `progress.md`; reason given.
+
+- [x] 1a. Ollama provider _(added: plan puts it in Phase 2, but the loop needs one working provider)_
+- [ ] 1b. Read tools (from `progress.md`):
+  - [ ] `readFile(path)`
+  - [ ] `listFiles(dir?)`
+  - [ ] `searchCode(query)`
+  - [ ] `getGitDiff()`
+  - [x] Path sandbox: tools cannot read outside repo root _(added: plan §21 "validate tool arguments", "least privilege")_
+  - [ ] Output size cap with `[truncated]` _(added: keeps tool output within small-model context)_
+  - [ ] Tests for each tool + sandbox
+- [ ] 1c. Agent loop: LLM → tool call → execute → result → LLM, with max-iterations cap (from `progress.md` + plan §5)
+- [ ] 1d. CLI: ask a question about a repo, get an answer (from `progress.md` "Build a TypeScript CLI")
+- [ ] Phase 1 done: success criterion demonstrated on this repo or demo-frontend
 
 ## Modules (code)
 
@@ -109,3 +128,4 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 - 2026-10-10 — Tracker created. Repo audited: Task 001 partly done (monorepo, lint/format, frontend scaffold). Next: finish Task 001 (tsconfig.base, `LLMProvider`), then Phase 1 tool-calling prototype.
 - 2026-10-10 — Task 001 steps 1–4 done: tsconfig.base, shared package, LLM types + type guard + tests. README written (step 5). Task 001 complete.
 - 2026-10-14 — Phase 1a done: OllamaProvider (fetch, non-streaming) + 5 mocked-fetch tests. Next: 1b tools.
+- 2026-10-14 — 1b sandbox done: `resolveInRoot` (path.resolve + path.relative, rejects `..` segments, absolute, null bytes) + 5 tests. Next: `readFile`.
