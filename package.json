@@ -13,6 +13,7 @@
   "private": "true",
   "scripts": {
     "dev:agent": "npm run dev --workspace=@agent/core",
+    "test:agent": "vitest run apps/agent",
     "test:shared": "vitest run packages/shared",
     "dev:frontend": "npm run dev --workspace=@demo/frontend",
     "lint": "eslint .",
