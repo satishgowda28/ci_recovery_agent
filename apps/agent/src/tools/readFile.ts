@@ -15,7 +15,7 @@ const readFileToolDef: ToolDefinition = {
   parameters: Schema.toJSONSchema(),
 };
 
-export async function readFileContent(root: string, args: { path: string }) {
+export async function readFileContent(root: string, args: { path: string }): Promise<string> {
   try {
     const parsed = Schema.safeParse(args);
     if (!parsed.success) {
