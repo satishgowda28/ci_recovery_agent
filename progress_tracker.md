@@ -1,7 +1,7 @@
 # Progress Tracker
 
 Legend: `[ ]` not started · `[~]` in progress · `[x]` complete
-Last updated: 2026-10-14 (Phase 1a: OllamaProvider done)
+Last updated: 2026-10-16 (Phase 1b: searchCode done)
 
 Plan: MVP first, then grow into full Feedback → Remediation → Verification system. Owner codes; Claude guides/reviews.
 
@@ -45,10 +45,10 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - [ ] 1b. Read tools (from `progress.md`):
   - [x] `readFile(path)` (`readFileContent`, zod `safeParse` args, errors returned as text)
   - [x] `listFiles(dir?)` (sorted, skips `node_modules`/`.git`, schema via `toJSONSchema`)
-  - [ ] `searchCode(query)`
+  - [x] `searchCode(query)` (plain-text match, recursive walk skips `node_modules`/`.git`, skips files > 1 MB, `path:line: text`)
   - [ ] `getGitDiff()`
   - [x] Path sandbox: tools cannot read outside repo root _(added: plan §21 "validate tool arguments", "least privilege")_
-  - [~] Output size cap with `[truncated]` (readFile done) _(added: keeps tool output within small-model context)_
+  - [x] Output size cap with `[truncated]` (readFile 20k chars, searchCode 50 matches) _(added: keeps tool output within small-model context)_
   - [ ] Tests for each tool + sandbox
 - [ ] 1c. Agent loop: LLM → tool call → execute → result → LLM, with max-iterations cap (from `progress.md` + plan §5)
 - [ ] 1d. CLI: ask a question about a repo, get an answer (from `progress.md` "Build a TypeScript CLI")
@@ -131,3 +131,4 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - 2026-10-14 — 1b sandbox done: `resolveInRoot` (path.resolve + path.relative, rejects `..` segments, absolute, null bytes) + 5 tests. Next: `readFile`.
 - 2026-10-14 — 1b `readFile` done + 4 tests (temp dir). Decision: tool errors (incl. sandbox) returned as text, not thrown. zod adopted for tool arg validation. Next: `listFiles`.
 - 2026-10-15 — 1b `listFiles` done + 4 tests. Next: `searchCode`.
+- 2026-10-16 — 1b `searchCode` done + 5 tests (temp dir). Output cap item complete. Next: `getGitDiff`.
