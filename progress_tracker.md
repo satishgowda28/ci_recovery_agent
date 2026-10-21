@@ -1,7 +1,7 @@
 # Progress Tracker
 
 Legend: `[ ]` not started · `[~]` in progress · `[x]` complete
-Last updated: 2026-10-21 (Phase 1c: registry done)
+Last updated: 2026-10-21 (Phase 1c complete)
 
 Plan: MVP first, then grow into full Feedback → Remediation → Verification system. Owner codes; Claude guides/reviews.
 
@@ -50,17 +50,17 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
   - [x] Path sandbox: tools cannot read outside repo root _(added: plan §21 "validate tool arguments", "least privilege")_
   - [x] Output size cap with `[truncated]` (readFile + getGitDiff 20k chars via shared `MAX_CHARS` in `src/const`, searchCode 50 matches) _(added: keeps tool output within small-model context)_
   - [x] Tests for each tool + sandbox (28 agent tests)
-- [~] 1c. Agent loop: LLM → tool call → execute → result → LLM, with max-iterations cap (from `progress.md` + plan §5)
+- [x] 1c. Agent loop: LLM → tool call → execute → result → LLM, with max-iterations cap (from `progress.md` + plan §5)
   - [x] Tool registry: `defineTool` (zod schema → `parameters` + `safeParse` in one place), `getToolDefinitions()`, `runTool()` (unknown tool / bad args / throw → error text)
-  - [ ] Loop `runAgent` + max-iterations cap
-  - [ ] Loop tests (fake provider)
+  - [x] Loop `runAgent` (`src/agent/loop.ts`) + max-iterations cap (`MAX_ITER` = 8), `onToolCall` hook
+  - [x] Loop tests (fake provider, 6 tests)
 - [ ] 1d. CLI: ask a question about a repo, get an answer (from `progress.md` "Build a TypeScript CLI")
 - [ ] Phase 1 done: success criterion demonstrated on this repo or demo-frontend
 
 ## Modules (code)
 
 - [x] LLM layer: `LLMProvider` interface, request/response types, `isToolCallResponse` guard
-- [ ] Agent loop (manual): observe → LLM → tool call → result → repeat
+- [x] Agent loop (manual): observe → LLM → tool call → result → repeat
 - [x] Tool registry + argument validation
 - [ ] Read tools: `listFiles`, `readFile`, `searchCode`, `getGitDiff`
 - [ ] CI tools: `getCILogs`, `getWorkflowRun`, `getPlaywrightEvidence`
@@ -137,3 +137,4 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - 2026-10-16 — 1b `searchCode` done + 5 tests (temp dir). Output cap item complete. Next: `getGitDiff`.
 - 2026-10-21 — 1b `getGitDiff` done + 5 tests (temp git repo). `MAX_CHARS` moved to `src/const`. 1b complete. Later: untracked files not in diff. Next: 1c agent loop + registry.
 - 2026-10-21 — 1c registry done: tools migrated to `defineTool`, `registry.ts` + 5 tests (33 agent tests). Live probe: zod `$schema` + `role: tool` result accepted by llama3.2. Next: loop.
+- 2026-10-21 — 1c loop done: `runAgent` + 6 fake-provider tests (39 agent tests). 1c complete. Next: 1d CLI, then live demo on demo-frontend.
