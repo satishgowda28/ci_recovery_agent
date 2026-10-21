@@ -2,7 +2,8 @@ import { mkdtemp, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { MAX_CHARS, readFileContent } from '../../tools/readFile';
+import { MAX_CHARS } from '../../const';
+import { readFileContent } from '../../tools/readFile';
 
 describe('ReadFile Tool Test', () => {
   let testTmpDir: string;

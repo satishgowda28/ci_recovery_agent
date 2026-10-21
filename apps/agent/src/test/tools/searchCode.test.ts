@@ -40,7 +40,7 @@ describe('Search Code Test Case', () => {
     await mkdir(subFolder, { recursive: true });
     await writeFile(testFile, `Lorem ipsum`, 'utf8');
     const result = await searchCode(testTmpDir, { query: 'foo' });
-    expect(result).toBe('No matches gitfor "foo"');
+    expect(result).toBe('No matches for "foo"');
   });
   it('60 Match', async () => {
     const subFolder = join(testTmpDir, 'src');

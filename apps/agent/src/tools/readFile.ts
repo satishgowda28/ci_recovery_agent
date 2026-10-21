@@ -1,9 +1,8 @@
 import { ToolDefinition } from '@agent/shared';
 import { readFile } from 'fs/promises';
 import { z } from 'zod';
+import { MAX_CHARS } from '../const';
 import { resolveInRoot } from './sandbox';
-
-export const MAX_CHARS = 20000;
 
 const Schema = z.object({
   path: z.string().describe('Path relative to repo root'),
