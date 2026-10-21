@@ -1,6 +1,6 @@
-import { ToolDefinition } from '@agent/shared';
 import { readdir } from 'fs/promises';
 import z from 'zod';
+import { defineTool } from './defineTools';
 import { resolveInRoot } from './sandbox';
 
 const EXCLUDE_FOLDE_FILES = ['node_modules', '.git'];
@@ -11,20 +11,9 @@ const Schema = z.object({
     .describe('Folder path relative to the repo root. Omit to list the root.'),
 });
 
-const listFilesToolDef: ToolDefinition = {
-  name: 'listFiles',
-  description:
-    'List files and folders in a repository directory. Folders end with "/". Not recursive.',
-  parameters: Schema.toJSONSchema(),
-};
-
-export async function listFiles(root: string, args: { dir?: string }): Promise<string> {
+export async function listFiles(root: string, args: z.infer<typeof Schema>): Promise<string> {
   try {
-    const parsed = Schema.safeParse(args);
-    if (!parsed.success) {
-      return `Error: Invalid arguments: ${parsed.error.message}`;
-    }
-    const { dir } = parsed.data;
+    const { dir } = args;
     const dirPath = resolveInRoot(root, dir ?? '.');
     const dirContent = await readdir(dirPath, { withFileTypes: true });
     const result = dirContent
@@ -51,4 +40,10 @@ export async function listFiles(root: string, args: { dir?: string }): Promise<s
   }
 }
 
-listFiles.toolDef = listFilesToolDef;
+export const listFilesTool = defineTool({
+  name: 'listFiles',
+  description:
+    'List files and folders in a repository directory. Folders end with "/". Not recursive.',
+  schema: Schema,
+  func: listFiles,
+});

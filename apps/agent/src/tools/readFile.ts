@@ -1,26 +1,16 @@
-import { ToolDefinition } from '@agent/shared';
 import { readFile } from 'fs/promises';
 import { z } from 'zod';
 import { MAX_CHARS } from '../const';
+import { defineTool } from './defineTools';
 import { resolveInRoot } from './sandbox';
 
 const Schema = z.object({
   path: z.string().describe('Path relative to repo root'),
 });
 
-const readFileToolDef: ToolDefinition = {
-  name: 'readFileContent',
-  description: '',
-  parameters: Schema.toJSONSchema(),
-};
-
-export async function readFileContent(root: string, args: { path: string }): Promise<string> {
+export async function readFileContent(root: string, args: z.infer<typeof Schema>): Promise<string> {
   try {
-    const parsed = Schema.safeParse(args);
-    if (!parsed.success) {
-      return `Invalid arguments: ${parsed.error.message}`;
-    }
-    const { path } = parsed.data;
+    const { path } = args;
     const filePath = resolveInRoot(root, path);
     const content = await readFile(filePath, 'utf8');
     if (content.length > MAX_CHARS) {
@@ -35,4 +25,11 @@ export async function readFileContent(root: string, args: { path: string }): Pro
     return `Error reading file: ${e.message}`;
   }
 }
-readFileContent.toolDef = readFileToolDef;
+
+export const readFileTool = defineTool({
+  name: 'readFile',
+  description:
+    'Read a text file from the repository. Path is relative to the repo root. Long files are truncated.',
+  schema: Schema,
+  func: readFileContent,
+});

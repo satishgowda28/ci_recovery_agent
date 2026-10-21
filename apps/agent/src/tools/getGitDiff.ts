@@ -1,25 +1,14 @@
-import { ToolDefinition } from '@agent/shared';
 import { ExecException, execFile } from 'child_process';
 import { promisify } from 'util';
 import z from 'zod';
 import { MAX_CHARS } from '../const';
+import { defineTool } from './defineTools';
 
 const execFileAsync = promisify(execFile);
 const Schema = z.object({});
 
-const getGitDiffToolDef: ToolDefinition = {
-  name: 'getGitDiff',
-  description:
-    'Show uncommitted changes (staged and unstaged) since the last commit, as a unified diff. Untracked files are not included.',
-  parameters: Schema.toJSONSchema(),
-};
-
-export async function getGitDiff(root: string, args = {}) {
+export async function getGitDiff(root: string) {
   try {
-    const parsed = Schema.safeParse(args);
-    if (!parsed.success) {
-      return `Error: Invalid arguments: ${parsed.error.message}`;
-    }
     const { stdout } = await execFileAsync('git', ['diff', 'HEAD', '--no-color', '--no-ext-diff'], {
       cwd: root,
       timeout: 10_000,
@@ -41,4 +30,10 @@ export async function getGitDiff(root: string, args = {}) {
   }
 }
 
-getGitDiff.toolDef = getGitDiffToolDef;
+export const getGitDiffTool = defineTool({
+  name: 'getGitDiff',
+  description:
+    'Show uncommitted changes (staged and unstaged) since the last commit, as a unified diff. Untracked files are not included.',
+  schema: Schema,
+  func: getGitDiff,
+});

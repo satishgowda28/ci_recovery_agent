@@ -1,19 +1,12 @@
-import { ToolDefinition } from '@agent/shared';
 import { readdir, readFile, stat } from 'fs/promises';
 import path from 'path';
 import z from 'zod';
+import { defineTool } from './defineTools';
 
 const EXCLUDE_DIR = ['node_modules', '.git'];
 const Schema = z.object({
   query: z.string().describe('Exact text to find, e.g. a function name or "4173"'),
 });
-
-const searchCodeToolDef: ToolDefinition = {
-  name: 'searchCode',
-  description:
-    'Search all repository files for an exact text (not regex). Returns matches as "path:line: text". Max 50 results',
-  parameters: Schema.toJSONSchema(),
-};
 
 async function walkDir(dirPath: string): Promise<Array<string>> {
   const dirContent = await readdir(dirPath, { withFileTypes: true });
@@ -48,13 +41,9 @@ async function searchFile(root: string, filePath: string, query: string) {
   return result;
 }
 
-export async function searchCode(root: string, args: { query: string }) {
+export async function searchCode(root: string, args: z.infer<typeof Schema>) {
   try {
-    const parsed = Schema.safeParse(args);
-    if (!parsed.success) {
-      return `Error: Invalid arguments: ${parsed.error.message}`;
-    }
-    const { query } = parsed.data;
+    const { query } = args;
     const filePaths = await walkDir(root);
     const searchResult = [];
     for (const filePath of filePaths) {
@@ -78,4 +67,11 @@ export async function searchCode(root: string, args: { query: string }) {
     return `Error: ${e.message}`;
   }
 }
-searchCode.toolDef = searchCodeToolDef;
+
+export const searchCodeTool = defineTool({
+  name: 'searchCode',
+  description:
+    'Search all repository files for an exact text (not regex). Returns matches as "path:line: text". Max 50 results',
+  schema: Schema,
+  func: searchCode,
+});
