@@ -1,7 +1,7 @@
 # Progress Tracker
 
 Legend: `[ ]` not started · `[~]` in progress · `[x]` complete
-Last updated: 2026-10-22 (Phase 1d CLI done)
+Last updated: 2026-10-22 (Phase 1 complete)
 
 Plan: MVP first, then grow into full Feedback → Remediation → Verification system. Owner codes; Claude guides/reviews.
 
@@ -10,7 +10,7 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 | Phase | Name                               | Status |
 | ----- | ---------------------------------- | ------ |
 | 0     | Learn architecture / LLM basics    | [~]    |
-| 1     | Tiny local read-only agent (CLI)   | [~]    |
+| 1     | Tiny local read-only agent (CLI)   | [x]    |
 | 2     | LLM provider abstraction           | [ ]    |
 | 3     | Demo frontend                      | [~]    |
 | 4     | Playwright + GitHub Actions CI     | [~]    |
@@ -35,7 +35,7 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 - [x] Minimal `LLMProvider` interface in `packages/shared`
 - [x] README (setup, commands, layout, architecture)
 
-## Phase 1 — Tiny local agent (current)
+## Phase 1 — Tiny local agent (complete)
 
 Source: `progress.md` → Phase 1. Success criterion: agent can inspect a small repo and explain a code issue using tools. No writing, no GitHub, no autonomous fixes.
 
@@ -55,7 +55,7 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
   - [x] Loop `runAgent` (`src/agent/loop.ts`) + max-iterations cap (`MAX_ITER` = 8), `onToolCall` hook
   - [x] Loop tests (fake provider, 6 tests)
 - [x] 1d. CLI: ask a question about a repo, get an answer (from `progress.md` "Build a TypeScript CLI") — `npm run agent -- [--repo <path>] [--model <name>] "<question>"`; `util.parseArgs`, repo resolved via `INIT_CWD`, tool calls → stderr, answer → stdout, exit 1 on usage/repo/Ollama errors
-- [ ] Phase 1 done: success criterion demonstrated on this repo or demo-frontend
+- [x] Phase 1 done: success criterion demonstrated on demo-frontend — explicit question ("Read playwright.config.ts. Is baseURL port same as webServer port?") → `readFile` → correct diagnosis (4173 vs 5173). Open-ended wording ("Why does the Playwright test use the wrong port?") fails with llama3.2 (naive search, honest "couldn't find") — model planning limit, deferred to model router / prompt work
 
 ## Modules (code)
 
@@ -139,3 +139,4 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - 2026-10-21 — 1c registry done: tools migrated to `defineTool`, `registry.ts` + 5 tests (33 agent tests). Live probe: zod `$schema` + `role: tool` result accepted by llama3.2. Next: loop.
 - 2026-10-21 — 1c loop done: `runAgent` + 6 fake-provider tests (39 agent tests). 1c complete. Next: 1d CLI, then live demo on demo-frontend.
 - 2026-10-22 — 1d CLI done. Manual acceptance: usage/bad repo/Ollama down → exit 1; demo-frontend port question answered correctly (4173 vs 5173), exit 0. Live runs earlier: llama3.2 correct ~1/3 on open-ended wording (hallucinated or bad tool args), correct on explicit wording. Later: answer quality (stronger model / prompt). Next: Phase 1 demo sign-off.
+- 2026-10-22 — Phase 1 complete (owner sign-off). Later notes carried forward: open-ended question quality (stronger model or prompt e.g. "start with listFiles"), `getGitDiff` ignores untracked files, shared EXCLUDE list for listFiles/searchCode. Next: pick Phase 2 vs Phase 4 (see plan).
