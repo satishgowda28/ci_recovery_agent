@@ -1,7 +1,7 @@
 # Progress Tracker
 
 Legend: `[ ]` not started · `[~]` in progress · `[x]` complete
-Last updated: 2026-10-21 (Phase 1c complete)
+Last updated: 2026-10-22 (Phase 1d CLI done)
 
 Plan: MVP first, then grow into full Feedback → Remediation → Verification system. Owner codes; Claude guides/reviews.
 
@@ -54,7 +54,7 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
   - [x] Tool registry: `defineTool` (zod schema → `parameters` + `safeParse` in one place), `getToolDefinitions()`, `runTool()` (unknown tool / bad args / throw → error text)
   - [x] Loop `runAgent` (`src/agent/loop.ts`) + max-iterations cap (`MAX_ITER` = 8), `onToolCall` hook
   - [x] Loop tests (fake provider, 6 tests)
-- [ ] 1d. CLI: ask a question about a repo, get an answer (from `progress.md` "Build a TypeScript CLI")
+- [x] 1d. CLI: ask a question about a repo, get an answer (from `progress.md` "Build a TypeScript CLI") — `npm run agent -- [--repo <path>] [--model <name>] "<question>"`; `util.parseArgs`, repo resolved via `INIT_CWD`, tool calls → stderr, answer → stdout, exit 1 on usage/repo/Ollama errors
 - [ ] Phase 1 done: success criterion demonstrated on this repo or demo-frontend
 
 ## Modules (code)
@@ -138,3 +138,4 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - 2026-10-21 — 1b `getGitDiff` done + 5 tests (temp git repo). `MAX_CHARS` moved to `src/const`. 1b complete. Later: untracked files not in diff. Next: 1c agent loop + registry.
 - 2026-10-21 — 1c registry done: tools migrated to `defineTool`, `registry.ts` + 5 tests (33 agent tests). Live probe: zod `$schema` + `role: tool` result accepted by llama3.2. Next: loop.
 - 2026-10-21 — 1c loop done: `runAgent` + 6 fake-provider tests (39 agent tests). 1c complete. Next: 1d CLI, then live demo on demo-frontend.
+- 2026-10-22 — 1d CLI done. Manual acceptance: usage/bad repo/Ollama down → exit 1; demo-frontend port question answered correctly (4173 vs 5173), exit 0. Live runs earlier: llama3.2 correct ~1/3 on open-ended wording (hallucinated or bad tool args), correct on explicit wording. Later: answer quality (stronger model / prompt). Next: Phase 1 demo sign-off.
