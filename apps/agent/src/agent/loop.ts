@@ -19,7 +19,7 @@ export async function runAgent({
   maxIterations = MAX_ITER,
   onToolCall,
 }: RunAgentArgs): Promise<string> {
-  let messages: Message[] = [
+  const messages: Message[] = [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: question },
   ];
@@ -30,7 +30,7 @@ export async function runAgent({
       return llmResp.text;
     }
     messages.push({ role: 'assistant', content: '', toolCalls: llmResp.toolCalls });
-    for (let tool of llmResp.toolCalls) {
+    for (const tool of llmResp.toolCalls) {
       const toolResp = await runTool(root, tool);
       onToolCall?.(tool, toolResp);
       messages.push({ role: 'tool', content: toolResp, toolCallId: tool.id });
