@@ -3,7 +3,8 @@ import { stat } from 'fs/promises';
 import path from 'path';
 import { parseArgs } from 'util';
 import { runAgent } from './agent/loop';
-import { OllamaProvider } from './ollama';
+import { loadConfig } from './config';
+import { createProvider } from './llm/createProvider';
 const { values, positionals } = parseArgs({
   options: {
     repo: { type: 'string' },
@@ -13,6 +14,14 @@ const { values, positionals } = parseArgs({
 });
 
 async function main() {
+  try {
+    process.loadEnvFile();
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      return onFail(`Error: cannot read .env: ${(err as Error).message}`);
+    }
+  }
+
   const qn = positionals[0];
 
   if (!qn) {
@@ -35,10 +44,11 @@ async function main() {
     return onFail(`Error: ${(err as Error).message}`);
   }
   try {
-    const provider = new OllamaProvider();
+    const config = loadConfig(process.env);
+    const provider = createProvider(config);
     const result = await runAgent({
       provider,
-      model: values.model ?? 'llama3.2',
+      model: values.model ?? config.LLM_MODEL,
       question: qn,
       root,
       onToolCall,
@@ -46,7 +56,7 @@ async function main() {
     console.log(result);
     return;
   } catch (err) {
-    return onFail(`\nAGENT ERROR: ${(err as Error).message}`);
+    return onFail(`\n ${(err as Error).message}`);
   }
 }
 

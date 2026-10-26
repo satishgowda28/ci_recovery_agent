@@ -1,7 +1,7 @@
 # Progress Tracker
 
 Legend: `[ ]` not started · `[~]` in progress · `[x]` complete
-Last updated: 2026-10-22 (Phase 1 complete)
+Last updated: 2026-10-26 (Phase 2: 2a + 2b done)
 
 Plan: MVP first, then grow into full Feedback → Remediation → Verification system. Owner codes; Claude guides/reviews.
 
@@ -11,7 +11,7 @@ Plan: MVP first, then grow into full Feedback → Remediation → Verification s
 | ----- | ---------------------------------- | ------ |
 | 0     | Learn architecture / LLM basics    | [~]    |
 | 1     | Tiny local read-only agent (CLI)   | [x]    |
-| 2     | LLM provider abstraction           | [ ]    |
+| 2     | LLM provider abstraction           | [~]    |
 | 3     | Demo frontend                      | [~]    |
 | 4     | Playwright + GitHub Actions CI     | [~]    |
 | 5     | GitHub failure ingestion           | [ ]    |
@@ -57,6 +57,20 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - [x] 1d. CLI: ask a question about a repo, get an answer (from `progress.md` "Build a TypeScript CLI") — `npm run agent -- [--repo <path>] [--model <name>] "<question>"`; `util.parseArgs`, repo resolved via `INIT_CWD`, tool calls → stderr, answer → stdout, exit 1 on usage/repo/Ollama errors
 - [x] Phase 1 done: success criterion demonstrated on demo-frontend — explicit question ("Read playwright.config.ts. Is baseURL port same as webServer port?") → `readFile` → correct diagnosis (4173 vs 5173). Open-ended wording ("Why does the Playwright test use the wrong port?") fails with llama3.2 (naive search, honest "couldn't find") — model planning limit, deferred to model router / prompt work
 
+## Phase 2 — LLM provider abstraction (current)
+
+Source: `progress.md` → Phase 2 + ADR-008. Success criterion: switching providers requires configuration changes, not agent-code changes.
+
+Review checks against this list only. Items marked _(added)_ are not in `progress.md`; reason given.
+
+- [x] 2a. Config + provider factory (contract first): `loadConfig()` (zod, env vars `LLM_PROVIDER`, `LLM_MODEL`, `OLLAMA_URL`, `OPENROUTER_API_KEY`), `createProvider(config)`, `.env.example`, CLI uses factory
+- [x] 2b. `FreeCloudProvider` = `OpenRouterProvider` (OpenAI-compatible chat completions, plain `fetch`) + mocked-fetch tests
+- [ ] 2c. `PaidProvider` _(optional, deferred: plan + CLAUDE.md say paid is optional fallback)_
+- [ ] Phase 2 done: same CLI question answered via `ollama` and `openrouter` by changing `.env` only
+
+**Reminder — raise when Phase 2 is done (not part of the Phase 2 checklist):**
+- Truncated/blocked answers: when the model stops for `length` (max tokens) or `content_filter`, the agent receives a cut-off or empty answer and treats it as final. Applies to both Ollama (`done_reason`) and OpenRouter (`finish_reason`). Fix needs a shared-contract change in `LLMResponse` (e.g. a stop-reason / truncated field) and loop handling. Decide then whether to schedule it.
+
 ## Modules (code)
 
 - [x] LLM layer: `LLMProvider` interface, request/response types, `isToolCallResponse` guard
@@ -97,7 +111,7 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - [x] Vitest, Testing Library, jsdom
 - [x] Playwright test runner
 - [x] Ollama client — plain `fetch` `OllamaProvider` behind `LLMProvider` (tested)
-- [ ] Free cloud LLM SDK (OpenRouter or similar) — behind `LLMProvider`
+- [x] Free cloud LLM (OpenRouter) — plain `fetch` `OpenRouterProvider` behind `LLMProvider` (tested, mocked)
 - [ ] Paid LLM SDK (optional, last)
 - [ ] `@octokit/*` (REST, webhooks, app auth)
 - [ ] HTTP server for webhooks (Fastify/Express/Hono — decide at Phase 5)
@@ -140,3 +154,4 @@ Review checks against this list only. Items marked _(added)_ are not in `progres
 - 2026-10-21 — 1c loop done: `runAgent` + 6 fake-provider tests (39 agent tests). 1c complete. Next: 1d CLI, then live demo on demo-frontend.
 - 2026-10-22 — 1d CLI done. Manual acceptance: usage/bad repo/Ollama down → exit 1; demo-frontend port question answered correctly (4173 vs 5173), exit 0. Live runs earlier: llama3.2 correct ~1/3 on open-ended wording (hallucinated or bad tool args), correct on explicit wording. Later: answer quality (stronger model / prompt). Next: Phase 1 demo sign-off.
 - 2026-10-22 — Phase 1 complete (owner sign-off). Later notes carried forward: open-ended question quality (stronger model or prompt e.g. "start with listFiles"), `getGitDiff` ignores untracked files, shared EXCLUDE list for listFiles/searchCode. Next: pick Phase 2 vs Phase 4 (see plan).
+- 2026-10-26 — 2a + 2b done: `loadConfig` (zod, pure), `createProvider` (`src/llm/`), `.env` via `process.loadEnvFile()` (missing file OK), `.env.example`; `OpenRouterProvider` (string args parsed with `{}` fallback, error-in-200 handled, optional usage); Ollama now sends documented `tool_name` on tool results. 56 agent tests. Next: live switch demo (ollama ↔ openrouter via `.env`).

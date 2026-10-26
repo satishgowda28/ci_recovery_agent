@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "typecheck": "tsc --noEmit",
-    "start": "tsx src/index.ts"
+    "start": "tsx src/index.ts",
+    "env": "tsx src/config.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

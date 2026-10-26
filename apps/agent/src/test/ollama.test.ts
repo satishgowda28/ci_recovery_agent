@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { OllamaProvider } from '../ollama';
+import { OllamaProvider } from '../llm/ollama';
 
 const reply = (body: unknown, init: Partial<Response> = {}) =>
   vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => body, ...init });
@@ -90,5 +90,41 @@ describe('OllamaProvider', () => {
       type: 'function',
       function: { name: 'get_weather', description: 'get weather', parameters: {} },
     });
+  });
+
+  it('sends tool_name on tool results, looked up from the earlier assistant tool_calls', async () => {
+    const fetchMock = reply({
+      message: { role: 'assistant', content: 'done' },
+      prompt_eval_count: 1,
+      eval_count: 1,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    await new OllamaProvider().generate({
+      model: 'llama3.2',
+      messages: [
+        { role: 'user', content: 'q' },
+        {
+          role: 'assistant',
+          content: '',
+          toolCalls: [
+            { id: 'c1', name: 'listFiles', arguments: {} },
+            { id: 'c2', name: 'searchCode', arguments: { query: 'foo' } },
+          ],
+        },
+        { role: 'tool', content: 'a.txt', toolCallId: 'c1' },
+        { role: 'tool', content: 'a.txt:1: foo', toolCallId: 'c2' },
+        { role: 'tool', content: 'orphan', toolCallId: 'unknown' },
+      ],
+    });
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.messages[1].tool_calls).toHaveLength(2);
+    expect(body.messages[2]).toEqual({ role: 'tool', content: 'a.txt', tool_name: 'listFiles' });
+    expect(body.messages[3]).toEqual({
+      role: 'tool',
+      content: 'a.txt:1: foo',
+      tool_name: 'searchCode',
+    });
+    // unknown id: no tool_name, and no OpenAI-style tool_call_id leaks into the Ollama request
+    expect(body.messages[4]).toEqual({ role: 'tool', content: 'orphan' });
   });
 });

@@ -29,6 +29,8 @@ interface OllamaMessageDef {
   role: Role;
   content: string;
   tool_calls?: OllamaMessageToolCall[];
+  tool_name?: string;
+  tool_call_id?: string;
 }
 
 interface OllamaResponse {
@@ -102,11 +104,21 @@ export class OllamaProvider implements LLMProvider {
         },
       }));
     };
-    return msgs.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-      ...(msg.toolCalls && msg.toolCalls.length ? { tool_calls: mapTools(msg.toolCalls) } : {}),
-    }));
+    const namesById = new Map<string, string>();
+    return msgs.map((msg) => {
+      const initObj = { role: msg.role, content: msg.content };
+      if (msg.toolCalls && msg.toolCalls.length) {
+        msg.toolCalls.forEach(({ id, name }) => namesById.set(id, name));
+        return { ...initObj, tool_calls: mapTools(msg.toolCalls) };
+      }
+      if (msg.role === 'tool' && msg.toolCallId) {
+        const toolName = namesById.get(msg.toolCallId);
+        if (toolName) {
+          return { ...initObj, tool_name: toolName };
+        }
+      }
+      return initObj;
+    });
   }
   mapOllamaResponse(res: OllamaResponse): LLMResponse {
     const mapTools = (tools: OllamaMessageToolCall[]): ToolCall[] => {
