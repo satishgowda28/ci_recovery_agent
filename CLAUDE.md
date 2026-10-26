@@ -6,6 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The owner writes the code themselves; Claude guides. Default to: explain the concept, propose a small bounded task with acceptance criteria, review their diff, suggest next step. Do not implement whole features unprompted. Keep `progress_tracker.md` current (see below) when a module/phase item changes state.
 
+Agreed process (keep to it):
+
+- Owner writes feature code. Claude writes **tests** after the owner's code, and may do mechanical/boilerplate work when asked. Owner commits; Claude suggests commit messages, never commits.
+- Phase specs live as a **frozen checklist** in `progress_tracker.md`. Reviews check against that list only; new findings go in as "later" notes and do not block.
+- Spec the **shared contract first** (interface/factory), then implementations, then the consumer.
+- One decided design per task. "What if" questions get answered as background; the decided design stays unless the owner changes it.
+- Verify every external API claim (Ollama, OpenRouter, Node, npm) against official docs or a live call before stating it. Never from memory.
+- Every review: run `npm run test:agent`, `npm run typecheck:agent`, `npx eslint apps/agent`, `npx prettier --check apps/agent package.json`, and exercise changed behavior for real (probe script / CLI run), not only tests.
+- Never read or print secrets in `apps/agent/.env`; check only non-secret lines.
+
 ## Source of truth
 
 - `AI-Engineering-Feedback-Remediation-Agent-Master-Plan.md` — full design, 12-phase roadmap, security rules, "what NOT to build". It embeds `progress.md` as an appendix.
@@ -19,7 +29,13 @@ Core principle: **LLM proposes, tools execute, policy authorizes, humans approve
 
 npm workspaces (`apps/*`, `packages/*`):
 
-- `apps/agent` (`@agent/core`) — the agent. ESM-style NodeNext TS, run with `tsx`. Has `src/ollama.ts` (`OllamaProvider`, plain `fetch` to `/api/chat`, `stream: false`) with tests in `src/test/`. Planned subdirs per plan: `agent/ llm/ tools/ github/ playwright/ policy/ notifications/ workflows/`.
+- `apps/agent` (`@agent/core`) — the agent. CommonJS-emitting NodeNext TS, run with `tsx`. Tests in `src/test/` (mirrors `src/`).
+  - `src/index.ts` — CLI: `npm run agent -- [--repo <path>] [--model <name>] "<question>"`. Loads `apps/agent/.env` via `process.loadEnvFile()` (missing file OK; shell vars win), repo path resolved against `INIT_CWD`, tool calls → stderr, answer → stdout, exit 1 on errors.
+  - `src/config.ts` — `loadConfig(env)` (pure, zod): `LLM_PROVIDER` (`ollama`|`openrouter`), `LLM_MODEL` (required), `OLLAMA_URL`, `OPENROUTER_API_KEY`. See `.env.example`.
+  - `src/llm/` — `createProvider(config)` (only place that knows concrete providers), `OllamaProvider` (`/api/chat`, sends documented `tool_name` on tool results), `OpenRouterProvider` (OpenAI-compatible; tool args are JSON strings → parsed with `{}` fallback; errors can arrive inside a 200 as `choices[0].error`; uses `tool_call_id`).
+  - `src/agent/loop.ts` — `runAgent({provider, model, root, question, maxIterations=8, onToolCall})`: hand-written loop; pushes assistant `toolCalls` then one `role: tool` message per result; stops on text or max iterations.
+  - `src/tools/` — `defineTool({name, description, schema, func})` (zod schema → JSON Schema `parameters` + `safeParse` in one place), `registry.ts` (`getToolDefinitions()`, `runTool()` — never throws, returns error text). Tools: `readFile`, `listFiles`, `searchCode`, `getGitDiff` (`execFile`, fixed args, no shell). `sandbox.ts` `resolveInRoot`. Tools return errors as text, never throw. Output cap `MAX_CHARS` in `src/const`.
+  - Planned subdirs per plan: `github/ playwright/ policy/ notifications/ workflows/`.
 - `apps/demo-frontend` (`@demo/frontend`) — small Vite + React 19 store app that exists only to produce realistic CI/Playwright failures. Keep it small (ADR-002).
 - `packages/shared` (`@agent/shared`) — contracts only, no vendor code. `src/llm.ts` holds `Message`, `ToolCall`, `ToolDefinition`, `LLMRequest`, `LLMResponse` (union: text OR tool_calls; tool calls win if a model returns both), `LLMProvider`. Consumed as TS source via `exports` → `src/index.ts`; relative imports use `.js`.
 
@@ -31,12 +47,13 @@ Run from repo root unless noted.
 
 ```bash
 npm install
+npm run agent -- --repo apps/demo-frontend "question"   # run the agent CLI
 npm run dev:agent            # tsx watch apps/agent/src/index.ts
 npm run dev:frontend         # vite dev server
 npm run typecheck:agent      # tsc --noEmit in apps/agent
 npm run test:agent           # vitest run apps/agent
 npm run test:shared          # vitest run packages/shared
-npx vitest run apps/agent/src/test/ollama.test.ts -t "name"   # single test
+npx vitest run apps/agent/src/test/openRouter.test.ts -t "name"   # single test
 npm run lint                 # eslint . (root flat config, whole repo)
 npm run format               # prettier --write .
 npm run format:check
@@ -56,7 +73,7 @@ npm run typecheck
 
 Root `_lint`, `_typecheck`, `_test`, `_build` scripts (underscore prefix) fan out to all workspaces with `--if-present`; there is no unprefixed root `test`/`build`.
 
-Agent tests stub `fetch` with `vi.stubGlobal`; no live Ollama needed. Verify Ollama API claims against https://docs.ollama.com/api/chat or a live `curl` to `localhost:11434` — do not assert fields from memory.
+Agent tests stub `fetch` with `vi.stubGlobal`; no live LLM needed. Verify Ollama claims against https://docs.ollama.com/api/chat AND https://docs.ollama.com/capabilities/tool-calling (the guide documents fields the reference omits, e.g. `tool_name`) or a live `curl` to `localhost:11434`; OpenRouter against https://openrouter.ai/docs/api/reference/overview. Do not assert fields from memory.
 
 ## Known quirks
 
